@@ -3,7 +3,13 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
 Дан неориентированный граф, возможно с петлями и кратными ребрами. 
@@ -23,34 +29,61 @@ import java.util.TreeSet;
 
 //TODO rewrite
 public class SearchinDepth {
-
-    static TreeSet<Integer> nodesSet = new TreeSet<>();
+    
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
 
-        String[] nodesAndEdges = reader.readLine().split(" ");
+        Map<Integer, List<Integer>> graph = new HashMap<>();
 
-        Integer nodes = Integer.valueOf(nodesAndEdges[0]);
-        Integer edges = Integer.valueOf(nodesAndEdges[1]);
-        for (int i = 0; i < edges; i++) {
-            String[] twoNodes = reader.readLine().split(" ");
-            parseNodes(twoNodes);
+        //Numbers of vertexes and edges
+        String[] input = reader.readLine().split(" ");
+        int N = Integer.parseInt(input[0]);
+        int M = Integer.parseInt(input[1]);
+
+        //Input of Edges
+        for (int i = 0; i < M; i++) {
+            String[] twoEdges = reader.readLine().split(" ");
+            int u = Integer.valueOf(twoEdges[0]);
+            int v = Integer.valueOf(twoEdges[1]);
+
+            graph.putIfAbsent(u, new ArrayList<>());
+            graph.putIfAbsent(v, new ArrayList<>());
+
+            graph.get(u).add(v);
+            graph.get(v).add(u);
         }
+
+        //Set for visited nodes monitoring
+        Set<Integer> visited = new HashSet<>();
+    
+        //List to save componet of connectivity
+        List<Integer> component = new ArrayList<>();
+
+        if (graph.containsKey(1)) {
+            dfs(1, graph, visited, component);
+        }
+
+        Collections.sort(component);
+
+        System.out.println(component.size());
+        for (int vertex: component) {
+            System.out.print(vertex+ " ");
+        }
+
         reader.close();
-        System.out.println(nodesSet.size());
-        Object[] elements = nodesSet.toArray();
-        for (int i = 0; i < elements.length; i++) {
-            System.out.print(elements[i]);
-            if(i < elements.length - 1){
-                System.out.print(" ");
-            }
-        }
         writer.close();
     }
 
-    private static void parseNodes(String[] twoNodes){
-        nodesSet.add(Integer.parseInt(twoNodes[0]));
-        nodesSet.add(Integer.parseInt(twoNodes[1]));
+    private static void dfs(int v, Map<Integer, List<Integer>> graph, 
+                            Set<Integer> visited, List<Integer> component){
+        visited.add(v);
+        component.add(v);
+
+        for(int neighbor: graph.get(v)){
+            if(!visited.contains(neighbor)){
+                dfs(neighbor, graph, visited, component);
+            }
+        }        
     }
 }
